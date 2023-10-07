@@ -31,8 +31,8 @@ def main() -> None:
             raise ValueError("Not enough arguments")
         return 0
     except Exception as e:
-        print(f"{e}")
-        print(f"Please refer to the program manual :{main.__doc__}")
+        print(f"Error : {e}")
+        print(f"Please refer to the program manual :\n{main.__doc__}")
         return 1
 
 
