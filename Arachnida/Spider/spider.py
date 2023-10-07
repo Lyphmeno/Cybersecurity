@@ -26,11 +26,15 @@ def main() -> None:
 ------------------------------------------------------------------------------\
     """
     try:
+        argc = len(sys.argv)
+        if argc < 2:
+            raise ValueError("Not enough arguments")
         return 0
     except Exception as e:
         print(f"{e}")
+        print(f"Please refer to the program manual :{main.__doc__}")
         return 1
 
 
 if __name__ == "__main__":
-    print(main.__doc__)
+    main()
