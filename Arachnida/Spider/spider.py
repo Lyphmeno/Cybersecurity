@@ -3,8 +3,6 @@
 import sys
 import os
 import requests
-from urllib.parse import urljoin
-from html.parser import HTMLParser
 
 allowed_extensions = {".jpeg", ".jpg", ".png", ".bmp", ".gif"}
 
