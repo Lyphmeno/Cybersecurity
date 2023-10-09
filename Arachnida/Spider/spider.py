@@ -1,31 +1,6 @@
 #!/usr/bin/env python3.10
 
-import sys
-import os
-import requests
-
-allowed_extensions = {".jpeg", ".jpg", ".png", ".bmp", ".gif"}
-
-
-def scrap() -> None:
-    if not os.path.exists("./img/"):
-        os.makedirs("./img/")
-
-
-def parsing() -> None:
-    """\
-------------------------------------------------------------------------------
-    parsing:
-        Take care of parsing spider's arguments.
-------------------------------------------------------------------------------\
-    """
-    argc = len(sys.argv)
-    if argc < 2:
-        raise ValueError("Wrong number of arguments")
-    if not isinstance(sys.argv[argc - 1], str):
-        raise ValueError("Last argument should be a string URL")
-    if not requests.get(sys.argv[argc - 1]):
-        raise ValueError("Invalid URL type")
+from scrap import scrap
 
 
 def main() -> None:
@@ -51,8 +26,8 @@ def main() -> None:
 ------------------------------------------------------------------------------\
     """
     try:
-        parsing()
-        scrap()
+        scrapy = scrap()
+        scrapy.get_all_url()
         return 0
     except Exception as e:
         print(f"Error : {e}")
