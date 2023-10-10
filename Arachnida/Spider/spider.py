@@ -1,6 +1,6 @@
 #!/usr/bin/env python3.10
 
-from scrap import scrap
+from scrap import Scrap
 
 
 def main() -> None:
@@ -26,7 +26,7 @@ def main() -> None:
 ------------------------------------------------------------------------------\
     """
     try:
-        scrapy = scrap()
+        scrapy = Scrap()
         scrapy.get_all_url()
         return 0
     except Exception as e:
