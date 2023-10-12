@@ -26,9 +26,8 @@ def main() -> None:
 ------------------------------------------------------------------------------\
     """
     try:
-        scrapy = Scrap()
-        scrapy.get_all_url()
-        return 0
+        scraper = Scrap()
+        scraper.get_all_url()
     except Exception as e:
         print(f"Error : {e}")
         print(f"Please refer to the program manual :\n{main.__doc__}")

@@ -4,25 +4,22 @@ import sys
 import os
 import requests
 import shutil
-import urllib
 from bs4 import BeautifulSoup
-from urllib.parse import urljoin
+from urllib.parse import urlparse, urljoin
 import concurrent.futures
+
 
 class Scrap:
     ext = [".jpeg", ".jpg", ".png", ".bmp", ".gif"]
 
-    def __init__(self, rec=2, path='./data/'):
+    def __init__(self, rec=5, path='./data/'):
         self.rec = rec
         self.path = path
         self.links = []
         argc = len(sys.argv)
         if argc < 2:
             raise ValueError("Wrong number of arguments")
-        if not isinstance(sys.argv[argc - 1], str):
-            raise ValueError("Last argument should be a string URL")
         self.url = sys.argv[argc - 1]
-        self.url_rec = self.url
         self.response = requests.get(self.url)
         if not self.response.ok:
             raise ValueError("Invalid URL or failed to retrieve content")
@@ -59,42 +56,40 @@ class Scrap:
         except Exception as e:
             print(f"An error occurred while downloading an image: {e}")
 
-    def get_url(self, link_url, lvl):
-        if lvl < 1:
+    def is_same_domain(self, url1, url2):
+        return urlparse(url1).hostname == urlparse(url2).hostname
+
+    def get_url(self, url, lvl):
+        if lvl > self.rec or url in self.links:
             return
+        print("---New lvl of rec---")
         try:
-            response = requests.get(link_url)
+            response = requests.get(url)
             if not response.ok:
                 return
             soup = BeautifulSoup(response.text, 'html.parser')
             for link in soup.find_all('a'):
                 link_url = link.get('href')
-                if link_url and link_url not in self.links:
-                    img_url_parsed = urllib.parse.urlparse(link_url)
-                    original_url_parsed = urllib.parse.urlparse(self.url)
-                    if img_url_parsed.hostname == original_url_parsed.hostname:
-                        self.links.append(link_url)
-                        self.get_url(link_url, lvl - 1)
+                if link_url:
+                    print("- ", link_url)
+                    full_link = urljoin(url, link_url)
+                    print("+ ", full_link)
+                    if self.is_same_domain(full_link, self.url) and full_link not in self.links:
+                        self.links.append(full_link)
+                        self.get_url(full_link, lvl + 1)
         except Exception as e:
             print(f"An error occurred while fetching URLs: {e}")
 
     def get_all_url(self):
-        self.get_url(self.url, self.rec)
-        self.printlinks()
-        for link in self.links:
-            self.get_img(link)
+        self.get_url(self.url, 0)
+        # self.printlinks()
+        # for link in self.links:
+        #     self.get_img(link)
 
     def printlinks(self):
         for link in self.links:
             print(link)
+        print(f"{len(self.links)} links !")
 
     def print_res(self):
         print(self.response)
-
-if __name__ == "__main__":
-    try:
-        scraper = Scrap()
-        scraper.get_all_url()
-        scraper.get_img(scraper.url_rec)
-    except Exception as e:
-        print(f"An error occurred: {e}")
