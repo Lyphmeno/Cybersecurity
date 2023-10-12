@@ -9,7 +9,7 @@ from urllib.parse import urlparse, urljoin
 import concurrent.futures
 
 
-class Scrap:
+class Scrop:
     ext = [".jpeg", ".jpg", ".png", ".bmp", ".gif"]
 
     def __init__(self, rec=5, path='./data/'):
@@ -26,6 +26,14 @@ class Scrap:
         if os.path.exists(path):
             shutil.rmtree(path)
         os.makedirs(path)
+
+    def parser():
+        parser.add_argument('url', help="url to scrap")
+        parser.add_argument('-r', '--recursive', help="recursively downloads the images in a URL received as a parameter", action='store_true')
+        parser.add_argument('-l', '--level', help='indicates the maximum depth level of the recursive download.', default=5, type=int)
+        parser.add_argument('-p', '--path', help=' indicates the path where the downloaded files will be saved.', default='./data/')
+        arg = parser.parse_args()
+        return arg
 
     def get_img(self, link):
         try:
@@ -60,31 +68,35 @@ class Scrap:
         return urlparse(url1).hostname == urlparse(url2).hostname
 
     def get_url(self, url, lvl):
-        if lvl > self.rec or url in self.links:
+        print(f"---Trying to enter in {url, lvl}---")
+        if lvl > self.rec and url not in self.links:
             return
-        print("---New lvl of rec---")
+        print(f"\t\t\t\t---lvl {lvl} of rec---")
         try:
             response = requests.get(url)
             if not response.ok:
                 return
             soup = BeautifulSoup(response.text, 'html.parser')
-            for link in soup.find_all('a'):
+            for i, link in enumerate(soup.find_all('a'), start=0):
                 link_url = link.get('href')
                 if link_url:
-                    print("- ", link_url)
                     full_link = urljoin(url, link_url)
-                    print("+ ", full_link)
                     if self.is_same_domain(full_link, self.url) and full_link not in self.links:
-                        self.links.append(full_link)
+                        print("\t\t", i, "+ ", full_link)
                         self.get_url(full_link, lvl + 1)
+                        self.links.append(full_link)
         except Exception as e:
             print(f"An error occurred while fetching URLs: {e}")
 
     def get_all_url(self):
-        self.get_url(self.url, 0)
-        # self.printlinks()
-        # for link in self.links:
-        #     self.get_img(link)
+        if self.rec == 0:
+            self.get_img(self.url)
+            self.printlinks()
+        else:
+            self.get_url(self.url, 0)
+            self.printlinks()
+            for link in self.links:
+                self.get_img(link)
 
     def printlinks(self):
         for link in self.links:
