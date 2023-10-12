@@ -47,11 +47,6 @@ class Crawl:
 
     def check(self):
         self.args = self.parser()
-        if not self.args.url.endswith("/"):
-            self.args.url += "/"
-        response = requests.get(self.args.url)
-        if not response.ok:
-            raise ValueError("Invalid URL")
         self.domain = urlparse(self.args.url).hostname
         if os.path.exists(self.args.path):
             shutil.rmtree(self.args.path)
@@ -60,6 +55,35 @@ class Crawl:
         print("Recursion:\t\t", self.args.recursive)
         print("Level of recursion:\t", self.args.level)
         print("Path:\t\t\t", self.args.path)
+
+    def get_img(self, link):
+        try:
+            soup = BeautifulSoup(requests.get(link).text, 'html.parser')
+            img_tag = soup.find_all('img')
+            img_list = []
+            for i in img_tag:
+                img_url = i.get('src')
+                if img_url:
+                    img_url = urljoin(self.args.url, img_url)
+                    img_name = os.path.basename(img_url)
+                    if img_name.endswith(tuple(self.ext)):
+                        img_list.append(img_url)
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                executor.map(self.download_image, img_list)
+        except Exception as e:
+            print(f"An error occurred while getting images: {e}")
+
+    def download_image(self, img_url):
+        try:
+            response = requests.get(img_url)
+            if response.ok:
+                img_name = os.path.basename(img_url)
+                with open(os.path.join(self.args.path, img_name), 'wb') as img_file:
+                    img_file.write(response.content)
+            else:
+                print(f"Failed to download image: {img_url}")
+        except Exception as e:
+            print(f"An error occurred while downloading an image: {e}")
 
     def get_urls(self, url, level):
         if level < 1:
@@ -75,7 +99,7 @@ class Crawl:
                     if self.domain == urlparse(true_link).hostname\
                             and true_link not in self.links:
                         self.links.append(true_link)
-                        self.get_urls(true_link, level-1)
+                        self.get_urls(true_link, level - 1)
         except requests.exceptions.RequestException as e:
             print(f"Error while processing {url}: {e}")
         except Exception as e:
@@ -84,16 +108,16 @@ class Crawl:
     def execute(self):
         try:
             self.check()
-            if self.args.recursive:
+            if self.args.recursive and not self.args.level == 0:
                 self.get_urls(self.args.url, self.args.level)
             else:
                 self.links.append(self.args.url)
-            print("\n".join(self.links), "\n", len(self.links), "links")
+            for link in self.links:
+                self.get_img(link)
+            print("\n", "\n".join(self.links), "\n", len(self.links), "links")
         except ValueError as ve:
             print(ve)
         except requests.exceptions.RequestException as re:
             print("Request Error:", re)
         except Exception as e:
             print("An error occurred:", e)
-
-
