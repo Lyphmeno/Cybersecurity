@@ -9,7 +9,7 @@ def main() -> None:
         tarantula.execute()
     except Exception as e:
         print(f"Error : {e}")
-        print(f"Please refer to the program manual :\n{main.__doc__}")
+        print(f"Please refer to the program manual :\n{tarantula.__doc__}")
         return 1
 
 
