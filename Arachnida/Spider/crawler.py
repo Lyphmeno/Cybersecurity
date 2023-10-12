@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import multiprocessing
 import os
 import requests
 import shutil
@@ -35,6 +34,7 @@ class Crawl:
     def __init__(self) -> None:
         self.ext = [".jpeg", ".jpg", ".png", ".bmp", ".gif"]
         self.links = []
+        self.visited = []
         self.domain: str
 
     def parser(self):
@@ -78,16 +78,16 @@ class Crawl:
             response = requests.get(img_url)
             if response.ok:
                 img_name = os.path.basename(img_url)
-                with open(os.path.join(self.args.path, img_name), 'wb') as img_file:
-                    img_file.write(response.content)
-            else:
-                print(f"Failed to download image: {img_url}")
+                if not os.path.exists(os.path.join(self.args.path, img_name),):
+                    with open(os.path.join(self.args.path, img_name), 'wb') as img_file:
+                        img_file.write(response.content)
         except Exception as e:
             print(f"An error occurred while downloading an image: {e}")
 
     def get_urls(self, url, level):
-        if level < 1:
+        if level < 1 or url in self.visited:
             return
+        self.visited.append(url)
         try:
             response = requests.get(url)
             response.raise_for_status()
@@ -98,8 +98,8 @@ class Crawl:
                     true_link = urljoin(url, href)
                     if self.domain == urlparse(true_link).hostname\
                             and true_link not in self.links:
-                        self.links.append(true_link)
                         self.get_urls(true_link, level - 1)
+                        self.links.append(true_link)
         except requests.exceptions.RequestException as e:
             print(f"Error while processing {url}: {e}")
         except Exception as e:
@@ -112,9 +112,9 @@ class Crawl:
                 self.get_urls(self.args.url, self.args.level)
             else:
                 self.links.append(self.args.url)
+            print("Found", len(self.links), "links")
             for link in self.links:
                 self.get_img(link)
-            print("\n", "\n".join(self.links), "\n", len(self.links), "links")
         except ValueError as ve:
             print(ve)
         except requests.exceptions.RequestException as re:

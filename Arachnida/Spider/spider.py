@@ -1,6 +1,7 @@
 #!/usr/bin/env python3.10
 
 from crawler import Crawl
+import time
 
 
 def main() -> None:
@@ -14,4 +15,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    st = time.time()
     main()
+    elapsed_time = time.time() - st
+print('Execution time:', time.strftime("%H:%M:%S", time.gmtime(elapsed_time)))
