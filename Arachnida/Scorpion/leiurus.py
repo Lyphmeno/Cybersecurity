@@ -1,8 +1,12 @@
 #!/usr/bin/env python3.10
 
 import sys
+import tkinter as tk
 import imghdr
-import os
+import struct
+from gui import ImageViewer
+from PIL import Image, ImageTk
+
 
 class Leiurus:
     """\
@@ -23,7 +27,6 @@ class Leiurus:
         try:
             self.ext = [".jpeg", ".jpg", ".png", ".bmp", ".gif"]
             self.files = []
-            self.info: list[list[str]]
             self.check_error()
             self.execute()
         except ValueError as ve:
@@ -39,15 +42,20 @@ class Leiurus:
         if not len(self.files):
             raise ValueError("Not enough valid files")
 
-    def get_data(self, img):
-        with open(img, 'rb') as f:
-            img = f.read()
-        img_type = imghdr.what(None, h=img)
-        if img_type not in self.ext:
-            return
+    def get_data(self):
+        for file in self.files:
+            with open(file, 'rb') as f:
+                img = f.read()
+            img_type = imghdr.what(None, h=img)
+            if img_type not in self.ext:
+                self.files.remove(file)
 
+    def launch_gui(self):
+        root = tk.Tk()
+        viewer = ImageViewer(root, self.files)
+        root.mainloop()
 
     def execute(self):
-        for img in self.files:
-            self.get_data(img)
+        self.get_data()
+        self.launch_gui()
         print("\n".join(self.files))

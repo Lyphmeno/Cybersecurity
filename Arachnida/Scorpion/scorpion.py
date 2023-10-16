@@ -9,6 +9,5 @@ def main() -> None:
     """
     scorpion = Leiurus()
 
-
 if __name__ == '__main__':
     main()
