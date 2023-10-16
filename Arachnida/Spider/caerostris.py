@@ -9,10 +9,10 @@ import concurrent.futures
 import argparse
 
 
-class Crawl:
+class Caerostris:
     """\
 ------------------------------------------------------------------------------
-    SPIDER:
+    Caeostris:
         Scraping program to extract all the images from a website.
         The program will download the following extensions by default:
             • .jpg/jpeg
