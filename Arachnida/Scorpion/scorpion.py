@@ -7,11 +7,7 @@ def main() -> None:
     """
     Scorpion program executing the Leiurus class
     """
-    try:
-        scorpion = Leiurus()
-        scorpion.execute()
-    except Exception as e:
-        print(f"Please refer to the program manual :\n{scorpion.__doc__}")
+    scorpion = Leiurus()
 
 
 if __name__ == '__main__':
