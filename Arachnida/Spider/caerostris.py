@@ -40,7 +40,7 @@ class Caerostris:
         self.session = requests.Session()
 
     def parser(self):
-        parser = argparse.ArgumentParser(usage="\n"+Crawl.__doc__, add_help=False)
+        parser = argparse.ArgumentParser(usage="\n"+Caerostris.__doc__, add_help=False)
         parser.add_argument('url')
         parser.add_argument('-r', '--recursive', action='store_true')
         parser.add_argument('-l', '--level', default=5, type=int)

@@ -17,7 +17,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    timestamp = 1
+    timestamp = 0
     st = time.time()
     main()
     if timestamp:

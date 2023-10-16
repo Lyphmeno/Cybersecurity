@@ -30,3 +30,7 @@ class Leiurus:
         self.argc = len(sys.argv)
         if self.argc <= 1:
             raise ValueError("Not enough arguments")
+        for filename in sys.argv:
+            if filename.endswith(tuple(self.ext)):
+                self.files.append(filename)
+        print("\n".join(self.files))
