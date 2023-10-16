@@ -33,9 +33,11 @@ class Crawl:
     """
     def __init__(self) -> None:
         self.ext = [".jpeg", ".jpg", ".png", ".bmp", ".gif"]
-        self.links = []
-        self.visited = []
+        self.links = set()
+        self.visited = set()
+        self.downloaded = set()
         self.domain: str
+        self.session = requests.Session()
 
     def parser(self):
         parser = argparse.ArgumentParser(usage="\n"+Crawl.__doc__, add_help=False)
@@ -58,7 +60,9 @@ class Crawl:
 
     def get_img(self, link):
         try:
-            soup = BeautifulSoup(requests.get(link).text, 'html.parser')
+            response = self.session.get(link)
+            response.raise_for_status()
+            soup = BeautifulSoup(response.text, 'html.parser')
             img_tag = soup.find_all('img')
             img_list = []
             for i in img_tag:
@@ -74,22 +78,24 @@ class Crawl:
             print(f"An error occurred while getting images: {e}")
 
     def download_image(self, img_url):
+        if img_url in self.downloaded:
+            return
         try:
-            response = requests.get(img_url)
+            response = self.session.get(img_url)
             if response.ok:
                 img_name = os.path.basename(img_url)
-                if not os.path.exists(os.path.join(self.args.path, img_name),):
-                    with open(os.path.join(self.args.path, img_name), 'wb') as img_file:
-                        img_file.write(response.content)
+                with open(os.path.join(self.args.path, img_name), 'wb') as img_file:
+                    img_file.write(response.content)
+                self.downloaded.add(img_url)
         except Exception as e:
             print(f"An error occurred while downloading an image: {e}")
 
     def get_urls(self, url, level):
         if level < 1 or url in self.visited:
             return
-        self.visited.append(url)
+        self.visited.add(url)
         try:
-            response = requests.get(url)
+            response = self.session.get(url)
             response.raise_for_status()
             soup = BeautifulSoup(response.text, 'html.parser')
             for link in soup.find_all('a'):
@@ -99,7 +105,7 @@ class Crawl:
                     if self.domain == urlparse(true_link).hostname\
                             and true_link not in self.links:
                         self.get_urls(true_link, level - 1)
-                        self.links.append(true_link)
+                        self.links.add(true_link)
         except requests.exceptions.RequestException as e:
             print(f"Error while processing {url}: {e}")
         except Exception as e:
@@ -111,7 +117,7 @@ class Crawl:
             if self.args.recursive and not self.args.level == 0:
                 self.get_urls(self.args.url, self.args.level)
             else:
-                self.links.append(self.args.url)
+                self.links.add(self.args.url)
             print("Found", len(self.links), "links")
             for link in self.links:
                 self.get_img(link)
