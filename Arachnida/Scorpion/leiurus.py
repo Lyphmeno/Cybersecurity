@@ -3,7 +3,7 @@
 import sys
 import tkinter as tk
 import imghdr
-import struct
+import os
 from gui import ImageViewer
 from PIL import Image, ImageTk
 
@@ -51,9 +51,12 @@ class Leiurus:
                 self.files.remove(file)
 
     def launch_gui(self):
+        display_backup = os.getenv("DISPLAY", default=None)
+        os.environ["DISPLAY"] = ":0.0"
         root = tk.Tk()
         viewer = ImageViewer(root, self.files)
         root.mainloop()
+        os.environ["DISPLAY"] = display_backup
 
     def execute(self):
         self.get_data()
